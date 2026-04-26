@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gllry</title>
+    <meta
+      name="description"
+      content="Gllry is a premium, minimal photography portfolio with immersive galleries, presets, and a cinematic fullscreen viewer."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Cormorant+Garamond:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+
+    <button class="floating-menu" id="menuButton" type="button" aria-expanded="false" aria-controls="sidePanel">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <div class="theme-toggle-wrap">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">
+        <span class="theme-toggle__track">
+          <span class="theme-toggle__thumb"></span>
+          <span class="theme-toggle__label theme-toggle__label--sun">Light</span>
+          <span class="theme-toggle__label theme-toggle__label--moon">Dark</span>
+        </span>
+      </button>
+    </div>
+
+    <aside class="side-panel" id="sidePanel" aria-hidden="true">
+      <div class="side-panel__inner">
+        <div>
+          <p class="eyebrow">Gllry</p>
+          <h2>A visual brainstorm from a busy mind, still figuring out how to turn moments into images.</h2>
+        </div>
+        <nav class="panel-nav" aria-label="Primary">
+          <a href="#gallery">Gllry</a>
+          <a href="#filters">Filters</a>
+          <a href="#about">About</a>
+        </nav>
+        <div class="panel-meta">
+          <p>Gold Coast / Worldwide</p>
+          <p>Beach, nature, street, black and white, people</p>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="hero" id="top">
+        <div class="hero__copy">
+          <p class="eyebrow">Photography Gllry</p>
+          <h1>Minimal frames, chill atmosphere, letting images breathe like they should.</h1>
+          <p class="hero__lede">
+            Gllry blends nature, streets and concept... or at least it tries to.
+          </p>
+        </div>
+      </section>
+
+      <section class="filters" id="gallery">
+        <div class="filters__heading">
+          <p class="eyebrow">Gllry</p>
+          <h2>Bits and pieces from recent shoots, nothing too serious..</h2>
+        </div>
+        <div class="filters__controls">
+          <div class="chip-group" id="galleryFilters" aria-label="Filter gallery"></div>
+          <label class="sort-select">
+            <span>Sort</span>
+            <select id="sortSelect" aria-label="Sort gallery">
+              <option value="random">Random</option>
+              <option value="name-asc">Name A-Z</option>
+              <option value="name-desc">Name Z-A</option>
+            </select>
+          </label>
+        </div>
+        <div class="gallery-status" id="galleryStatus" aria-live="polite"></div>
+      </section>
+
+      <section class="gallery-shell">
+        <div class="gallery" id="galleryGrid" aria-live="polite"></div>
+      </section>
+
+      <section class="projects section-band" id="filters">
+        <div class="section-band__intro">
+          <p class="eyebrow">Filters</p>
+          <h2>Presets and camera moods I keep going back to for some reason.</h2>
+        </div>
+        <div class="project-grid">
+          <button class="project-card reveal preset-card" type="button" data-preset="salt-fade">
+            <span>01</span>
+            <h3>Kodak Tri-X 400</h3>
+            <p>Because everything looks good with a black & white filter.</p>
+          </button>
+          <button class="project-card reveal preset-card" type="button" data-preset="forest-soft">
+            <span>02</span>
+            <h3>Blue Marine</h3>
+            <p>Summer vibes, hot days and drinks.</p>
+          </button>
+          <button class="project-card reveal preset-card" type="button" data-preset="city-grain">
+            <span>03</span>
+            <h3>Pastel Colours</h3>
+            <p>Chill and peacefull colours.</p>
+          </button>
+          <button class="project-card reveal preset-card" type="button" data-preset="mono-quiet">
+            <span>04</span>
+            <h3>Cinematic</h3>
+            <p>What is that? A photo or a movie?</p>
+          </button>
+        </div>
+      </section>
+
+      <section class="about section-band" id="about">
+        <div class="about-grid">
+          <div class="about-visual reveal">
+            <figure class="about-photo" id="aboutPhotoFrame">
+              <img
+                id="aboutPhoto"
+                src="./assets/about/profile.jpg"
+                alt="Portrait for the about section"
+                loading="lazy"
+              />
+              <figcaption class="about-photo__placeholder">
+                Put your portrait in <code>assets/about/profile.jpg</code>
+              </figcaption>
+            </figure>
+          </div>
+          <div class="about-intro">
+            <div class="section-band__intro">
+              <p class="eyebrow">About</p>
+              <h2>A bit about me, the gear I actually use, and where you can find my work.</h2>
+            </div>
+          </div>
+          <div class="about-copy reveal">
+            <p class="about-copy__lead">
+              I started taking photos out of British boredom, but at the time grey, dark environments really weren't my thing. Now in the Gold Coast, it's a pleasure to photograph people and places enjoying the best of the Australian weather.
+            </p>
+            <p>
+              Street portraits, people surfing, beaches, anything that might go unnoticed in the rush of everyday life, but when captured ends up telling a story.
+            </p>
+            <div class="about-details">
+              <div class="about-block reveal">
+                <h3>Equipment</h3>
+                <div class="gear-list">
+                  <p><span>Cameras</span> Fujifilm XT30ii, Action 5 Pro</p>
+                  <p><span>Lenses</span> Fujifilm 18-55mm f3.5, Fujifilm 50-230mm f/4.5, 7Artisan 18mm f6.3</p>
+                  <p><span>Accessories</span> Variable ND2-400, Black Mist 1/4, UV filter</p>
+                </div>
+              </div>
+              <div class="about-block reveal">
+                <h3>Socials</h3>
+                <div class="social-links">
+                  <a href="https://www.instagram.com/gbrl_gallery/" target="_blank" rel="noreferrer">Instagram</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="viewer" id="viewer" aria-hidden="true">
+      <div class="viewer__backdrop"></div>
+      <button class="viewer__close viewer-ui" id="closeViewer" type="button" aria-label="Close viewer">Close</button>
+      <button class="viewer__nav viewer__nav--prev viewer-ui" id="prevPhoto" type="button" aria-label="Previous photo">
+        <span>&larr;</span>
+      </button>
+      <figure class="viewer__figure">
+        <img id="viewerImage" alt="" />
+        <figcaption class="viewer__caption viewer-ui">
+          <div>
+            <p id="viewerTitle"></p>
+            <span id="viewerMeta"></span>
+          </div>
+          <span id="viewerCount"></span>
+        </figcaption>
+      </figure>
+      <button class="viewer__nav viewer__nav--next viewer-ui" id="nextPhoto" type="button" aria-label="Next photo">
+        <span>&rarr;</span>
+      </button>
+    </div>
+
+    <div class="preset-modal" id="presetModal" aria-hidden="true">
+      <div class="preset-modal__backdrop"></div>
+      <div class="preset-modal__panel">
+        <button class="preset-modal__close" id="closePresetModal" type="button" aria-label="Close preset details">
+          Close
+        </button>
+        <div class="preset-modal__header">
+          <p class="eyebrow">Fujifilm Preset</p>
+          <h3 id="presetTitle"></h3>
+          <p id="presetDescription"></p>
+        </div>
+        <dl class="preset-specs" id="presetSpecs"></dl>
+      </div>
+    </div>
+
+    <script src="./photo-manifest.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
