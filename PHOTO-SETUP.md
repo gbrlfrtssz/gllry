@@ -1,6 +1,10 @@
 # Photo Setup
 
-Put your photos in these folders:
+The gallery is back to using local folders and `photo-manifest.js`.
+
+## Folder structure
+
+Put your images in these folders:
 
 - `assets/photos/beach`
 - `assets/photos/nature`
@@ -8,44 +12,28 @@ Put your photos in these folders:
 - `assets/photos/black-and-white`
 - `assets/photos/people`
 
-Supported formats:
+Your `About` portrait stays local too:
 
-- `.jpg`
-- `.jpeg`
-- `.png`
-- `.webp`
-- `.avif`
+- `assets/about/profile.jpg`
 
-After adding or removing photos, run:
+## How the gallery works
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\refresh-photo-manifest.ps1
-```
+- `All categories`: shows 3 random photos from each category, total 15
+- `Beach`, `Nature`, `Street`, `Black and White`, `People`: shows 15 random photos from the selected folder
 
-Or just double-click:
+## After adding or removing photos
 
-```text
-01-refresh-photo-manifest.bat
-```
+Run:
 
-That updates `photo-manifest.js`, which is what the site reads.
+- `01-refresh-photo-manifest.bat`
 
-If you want to refresh the manifest and push everything to GitHub in one go, use:
+That updates `photo-manifest.js` so the site can see the files.
 
-```text
-02-publish-gallery.bat
-```
+If everything looks right locally and you want to publish it to GitHub Pages, then run:
 
-That file:
+- `02-publish-gallery.bat`
 
-- refreshes `photo-manifest.js`
-- stages the gallery files
-- creates a git commit
-- pushes to your current remote branch
+## Notes
 
-Gallery behavior:
-
-- `All categories`: 3 random photos from each category, total 15
-- Single category selected: 15 random photos from that category
-
-If one category has fewer than the requested amount, the site shows as many as are available.
+- File names can be numbers like `1.jpg`, `25.webp`, `348921.png`
+- You do not need Unsplash for the gallery anymore
