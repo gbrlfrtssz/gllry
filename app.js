@@ -1,10 +1,14 @@
 const categoryConfig = [
-  { key: "beach", label: "Beach" },
-  { key: "nature", label: "Nature" },
-  { key: "street", label: "Street" },
-  { key: "black-and-white", label: "Black and White" },
-  { key: "people", label: "People" },
+  { key: "beach", label: "Beach", collectionId: "q6HFr0gXqoA" },
+  { key: "nature", label: "Nature", collectionId: "_R91G4klRAg" },
+  { key: "street", label: "Street", collectionId: "u2HkPiliuLo" },
+  { key: "black-and-white", label: "Black and White", collectionId: "2LrZ4j7a1mk" },
+  { key: "people", label: "People", collectionId: "KB3oPRZJpww" },
 ];
+
+const unsplashConfig = window.GLLRY_UNSPLASH || {};
+const UNSPLASH_ACCESS_KEY = unsplashConfig.accessKey || "";
+const REMOTE_CATEGORY_LIMIT = 30;
 
 const manifest = window.GLLRY_PHOTO_MANIFEST || {
   beach: [],
@@ -45,6 +49,8 @@ const state = {
   currentIndex: 0,
   viewerIdleTimer: null,
 };
+
+const collectionCache = new Map();
 
 const presets = {
   "salt-fade": {
@@ -140,13 +146,13 @@ function renderFilterGroups() {
     createChip("All categories", state.category === "all", () => {
       state.category = "all";
       renderFilterGroups();
-      renderGallery();
+      void renderGallery();
     }),
     ...categoryConfig.map((entry) =>
       createChip(entry.label, state.category === entry.key, () => {
         state.category = entry.key;
         renderFilterGroups();
-        renderGallery();
+        void renderGallery();
       }),
     ),
   ];
@@ -179,12 +185,70 @@ function sample(array, amount) {
   return shuffle(array).slice(0, amount);
 }
 
-function sortPhotos(list) {
-  if (state.sort === "random") {
-    return shuffle(list);
+function getPhotoIdentity(photo) {
+  return photo.fileName || photo.image;
+}
+
+function dedupePhotos(photos) {
+  const seen = new Set();
+  return photos.filter((photo) => {
+    const identity = getPhotoIdentity(photo);
+    if (seen.has(identity)) return false;
+    seen.add(identity);
+    return true;
+  });
+}
+
+function normalizeUnsplashPhoto(photo, categoryKey) {
+  return {
+    title: "",
+    fileName: photo.id || "",
+    categoryKey,
+    categoryLabel: getCategoryLabel(categoryKey),
+    ratio: "auto",
+    image: photo.urls?.regular || photo.urls?.full || "",
+  };
+}
+
+async function fetchCollectionPhotos(categoryKey) {
+  if (collectionCache.has(categoryKey)) {
+    return collectionCache.get(categoryKey);
   }
 
-  return [...list].sort((left, right) => {
+  const config = categoryConfig.find((entry) => entry.key === categoryKey);
+  if (!config?.collectionId || !UNSPLASH_ACCESS_KEY) {
+    return [];
+  }
+
+  const endpoint = new URL(`https://api.unsplash.com/collections/${config.collectionId}/photos`);
+  endpoint.searchParams.set("client_id", UNSPLASH_ACCESS_KEY);
+  endpoint.searchParams.set("per_page", String(REMOTE_CATEGORY_LIMIT));
+
+  const response = await fetch(endpoint.toString(), {
+    headers: {
+      "Accept-Version": "v1",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unsplash request failed for ${categoryKey}`);
+  }
+
+  const payload = await response.json();
+  const normalized = payload
+    .map((photo) => normalizeUnsplashPhoto(photo, categoryKey))
+    .filter((photo) => photo.image);
+
+  collectionCache.set(categoryKey, normalized);
+  return normalized;
+}
+
+function sortPhotos(items) {
+  if (state.sort === "random") {
+    return shuffle(items);
+  }
+
+  return [...items].sort((left, right) => {
     if (state.sort === "name-desc") {
       return right.title.localeCompare(left.title, undefined, { numeric: true });
     }
@@ -192,15 +256,55 @@ function sortPhotos(list) {
   });
 }
 
-function getFilteredPhotos() {
-  if (state.category === "all") {
-    const grouped = categoryConfig.flatMap((entry) =>
-      sample((manifest[entry.key] || []).map((path) => toPhotoObject(path, entry.key)), 3),
-    );
-    return sortPhotos(grouped).slice(0, 15);
+async function getCategoryPhotos(categoryKey) {
+  const config = categoryConfig.find((entry) => entry.key === categoryKey);
+
+  if (config?.collectionId) {
+    try {
+      const remotePhotos = await fetchCollectionPhotos(categoryKey);
+      if (remotePhotos.length) {
+        return remotePhotos;
+      }
+    } catch (error) {
+      console.warn(`${config.label} collection could not be loaded from Unsplash.`, error);
+    }
   }
 
-  const selected = (manifest[state.category] || []).map((path) => toPhotoObject(path, state.category));
+  return (manifest[categoryKey] || []).map((path) => toPhotoObject(path, categoryKey));
+}
+
+async function getFilteredPhotos() {
+  if (state.category === "all") {
+    const groupedPhotos = await Promise.all(
+      categoryConfig.map(async (entry) => dedupePhotos(await getCategoryPhotos(entry.key))),
+    );
+
+    const selected = [];
+    const seen = new Set();
+
+    groupedPhotos.forEach((photos) => {
+      let categoryCount = 0;
+      for (const photo of shuffle(photos)) {
+        const identity = getPhotoIdentity(photo);
+        if (seen.has(identity)) continue;
+        selected.push(photo);
+        seen.add(identity);
+        categoryCount += 1;
+        if (categoryCount === 3) break;
+      }
+    });
+
+    if (selected.length < 15) {
+      const remaining = dedupePhotos(groupedPhotos.flat()).filter(
+        (photo) => !seen.has(getPhotoIdentity(photo)),
+      );
+      selected.push(...sample(remaining, 15 - selected.length));
+    }
+
+    return sortPhotos(selected).slice(0, 15);
+  }
+
+  const selected = dedupePhotos(await getCategoryPhotos(state.category));
   return sortPhotos(sample(selected, 15));
 }
 
@@ -208,7 +312,6 @@ function createCard(photo, index) {
   const article = document.createElement("button");
   article.type = "button";
   article.className = "gallery-card";
-  article.style.setProperty("--ratio", photo.ratio);
   article.setAttribute("aria-label", `Open ${photo.categoryLabel} photo`);
   article.innerHTML = `
     <div class="gallery-card__image-wrap">
@@ -222,13 +325,13 @@ function createCard(photo, index) {
   return article;
 }
 
-function renderGallery() {
-  state.filteredPhotos = getFilteredPhotos();
+async function renderGallery() {
+  state.filteredPhotos = await getFilteredPhotos();
   galleryStatus.textContent = `${state.filteredPhotos.length} photographs / ${getCategoryLabel(state.category)}`;
 
   if (!state.filteredPhotos.length) {
     galleryGrid.innerHTML =
-      '<div class="gallery-empty">No local photos found for this category yet. Add images to the category folders and run the manifest refresh script.</div>';
+      '<div class="gallery-empty">No photos found for this category yet. Add local images or connect the Unsplash People collection with an access key in <code>unsplash-config.js</code>.</div>';
     return;
   }
 
@@ -381,7 +484,7 @@ function resetViewerIdle() {
 
 sortSelect.addEventListener("change", (event) => {
   state.sort = event.target.value;
-  renderGallery();
+  void renderGallery();
 });
 
 themeToggle.addEventListener("click", toggleTheme);
@@ -434,4 +537,4 @@ if (aboutPhoto && aboutPhotoFrame) {
 
 applyStoredTheme();
 renderFilterGroups();
-renderGallery();
+void renderGallery();
